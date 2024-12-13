@@ -1,70 +1,121 @@
-# Getting Started with Create React App
+# Content Fleet Dashboard
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A retro-futuristic content management system dashboard with a sci-fi inspired interface. This project showcases a modern approach to content management while providing an engaging and unique user experience.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+### 🎨 Interface
+- Retro-futuristic design with animated UI elements
+- Responsive layout that adapts to different screen sizes
+- Dynamic control panels with real-time metrics
+- Particle effects and scanning line animations
+- Collapsible navigation with interactive mini-controls
 
-### `npm start`
+### 🤖 AI Integration
+- Multiple specialized AI agents for different content tasks
+- Real-time agent status monitoring
+- Interactive chat interface for agent communication
+- Mission control center for task management
+- Dynamic performance metrics and analytics
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 📊 Monitoring & Analytics
+- Real-time system metrics visualization
+- Agent performance tracking
+- Content optimization metrics
+- Interactive data visualizations
+- Mission progress tracking
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 🔧 Technical Features
+- Built with React and Material-UI
+- Framer Motion for fluid animations
+- Real-time data updates
+- Modular component architecture
+- Comprehensive test coverage
 
-### `npm test`
+## Getting Started
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Prerequisites
+- Node.js (v14 or higher)
+- npm or yarn
 
-### `npm run build`
+### Installation
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. Clone the repository:
+```bash
+git clone [repository-url]
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. Install dependencies:
+```bash
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3. Start the development server:
+```bash
+npm start
+```
 
-### `npm run eject`
+4. Run tests:
+```bash
+npm test
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Project Structure
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+src/
+├── components/         # Reusable UI components
+├── contexts/          # React context providers
+├── utils/            # Utility functions
+├── views/            # Main view components
+└── theme.js         # Global styling configuration
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Key Components
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- **Bridge Overview**: Central command interface for monitoring all systems
+- **Agent Logs**: Historical record of AI agent activities
+- **Chat Console**: Direct communication interface with AI agents
+- **Analytics**: Performance metrics and data visualization
+- **Crew Management**: AI agent configuration and management
+- **Settings**: System configuration and preferences
 
-## Learn More
+## Development
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Component Architecture
+The dashboard uses a modular component architecture with:
+- Stateful parent components for data management
+- Pure UI components for presentation
+- Context providers for global state
+- Custom hooks for shared logic
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Styling
+- Theme-based styling system
+- CSS-in-JS with Material-UI
+- Responsive design principles
+- Animation system using Framer Motion
 
-### Code Splitting
+### Testing
+- Jest for unit testing
+- React Testing Library for component testing
+- Mock service worker for API testing
+- Comprehensive test coverage
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Contributing
 
-### Analyzing the Bundle Size
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## License
 
-### Making a Progressive Web App
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## Acknowledgments
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Inspired by retro-futuristic sci-fi interfaces
+- Built with modern web technologies
+- Designed for optimal user experience
+- Community feedback and contributions welcome
