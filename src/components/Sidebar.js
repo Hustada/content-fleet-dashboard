@@ -17,7 +17,14 @@ const menuItems = [
     icon: <DashboardIcon />,
     status: 'online',
     view: 'bridge',
-    description: 'Mission Control & Content Overview'
+    description: 'Command & Control Center'
+  },
+  { 
+    text: 'Mission Control',
+    icon: <AssignmentIcon />,
+    status: 'online',
+    view: 'missions',
+    description: 'Mission Management & Timeline'
   },
   { 
     text: 'Agent Logs',

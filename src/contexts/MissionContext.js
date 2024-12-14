@@ -3,75 +3,65 @@ import { createContext, useContext, useState } from 'react';
 const MissionContext = createContext();
 
 export function MissionProvider({ children }) {
-  const [currentMission, setCurrentMission] = useState({
-    id: null,
-    title: '',
-    objective: '',
-    parameters: {},
-    status: 'idle'
-  });
-
-  const [missionHistory] = useState([
+  const [missions, setMissions] = useState([
     {
-      id: 'M001',
-      title: 'AI Trends Analysis',
-      objective: 'Research and compile latest AI industry trends',
-      parameters: {
-        targetLength: '1500 words',
-        tone: 'Technical but accessible',
-        audience: 'Tech professionals',
-        keyTopics: ['Machine Learning', 'Neural Networks', 'AI Ethics'],
-        deadline: '2024-12-14'
+      id: 'm1',
+      title: 'Content Optimization Alpha',
+      status: 'in-progress',
+      priority: 'high',
+      progress: 65,
+      agents: ['agent-1', 'agent-2'],
+      timeline: {
+        start: '2024-01-01T00:00:00Z',
+        estimated_completion: '2024-01-15T00:00:00Z'
       },
-      status: 'in-progress'
-    },
-    {
-      id: 'M002',
-      title: 'Cloud Computing Overview',
-      objective: 'Create comprehensive guide to cloud services',
-      parameters: {
-        targetLength: '2000 words',
-        tone: 'Educational',
-        audience: 'IT Managers',
-        keyTopics: ['IaaS', 'PaaS', 'SaaS', 'Security'],
-        deadline: '2024-12-15'
-      },
-      status: 'pending'
+      tasks: [
+        { id: 't1', title: 'Analyze Content', status: 'completed' },
+        { id: 't2', title: 'Generate Recommendations', status: 'in-progress' },
+        { id: 't3', title: 'Implement Changes', status: 'pending' }
+      ]
     }
   ]);
 
-  const startMission = (mission) => {
-    setCurrentMission({
-      ...mission,
-      status: 'active'
-    });
+  const createMission = (missionData) => {
+    const newMission = {
+      id: `m${missions.length + 1}`,
+      status: 'pending',
+      progress: 0,
+      agents: [],
+      tasks: [],
+      timeline: {
+        start: new Date().toISOString(),
+        estimated_completion: null
+      },
+      ...missionData
+    };
+    setMissions(prev => [...prev, newMission]);
+    return newMission;
   };
 
-  const updateMissionStatus = (status) => {
-    setCurrentMission(prev => ({
-      ...prev,
-      status
-    }));
+  const updateMission = (missionId, updates) => {
+    setMissions(prev => prev.map(mission => 
+      mission.id === missionId ? { ...mission, ...updates } : mission
+    ));
   };
 
-  const clearMission = () => {
-    setCurrentMission({
-      id: null,
-      title: '',
-      objective: '',
-      parameters: {},
-      status: 'idle'
-    });
+  const deleteMission = (missionId) => {
+    setMissions(prev => prev.filter(mission => mission.id !== missionId));
+  };
+
+  const getMission = (missionId) => {
+    return missions.find(mission => mission.id === missionId);
   };
 
   return (
     <MissionContext.Provider 
       value={{
-        currentMission,
-        missionHistory,
-        startMission,
-        updateMissionStatus,
-        clearMission
+        missions,
+        createMission,
+        updateMission,
+        deleteMission,
+        getMission
       }}
     >
       {children}
@@ -86,3 +76,5 @@ export function useMission() {
   }
   return context;
 }
+
+export { MissionContext };

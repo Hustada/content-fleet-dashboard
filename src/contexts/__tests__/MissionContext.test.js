@@ -6,33 +6,34 @@ import '@testing-library/jest-dom';
 // Test component that uses the mission context
 const TestComponent = () => {
   const { 
-    currentMission, 
-    missionHistory,
-    startMission, 
-    updateMissionStatus, 
-    clearMission 
+    missions,
+    createMission,
+    updateMission,
+    deleteMission,
+    getMission
   } = useMission();
 
   return (
     <div>
-      <div data-testid="mission-status">{currentMission?.status || 'no-mission'}</div>
-      <div data-testid="mission-title">{currentMission?.title || 'no-title'}</div>
-      <div data-testid="mission-objective">{currentMission?.objective || 'no-objective'}</div>
-      <div data-testid="mission-history-count">{missionHistory.length}</div>
-      <button onClick={() => startMission({ 
-        id: 'test-1',
+      <div data-testid="missions-count">{missions.length}</div>
+      <div data-testid="first-mission-status">
+        {missions[0]?.status || 'no-mission'}
+      </div>
+      <div data-testid="first-mission-title">
+        {missions[0]?.title || 'no-title'}
+      </div>
+      <button onClick={() => createMission({ 
         title: 'Test Mission',
-        objective: 'Test Objective',
-        parameters: {},
-        status: 'active'
+        priority: 'high',
+        status: 'pending'
       })}>
-        Start Mission
+        Create Mission
       </button>
-      <button onClick={() => updateMissionStatus('completed')}>
+      <button onClick={() => updateMission(missions[0]?.id, { status: 'completed' })}>
         Complete Mission
       </button>
-      <button onClick={clearMission}>
-        Clear Mission
+      <button onClick={() => deleteMission(missions[0]?.id)}>
+        Delete Mission
       </button>
     </div>
   );
@@ -46,13 +47,12 @@ describe('MissionContext', () => {
       </MissionProvider>
     );
 
-    expect(getByTestId('mission-status')).toHaveTextContent('idle');
-    expect(getByTestId('mission-title')).toHaveTextContent('no-title');
-    expect(getByTestId('mission-objective')).toHaveTextContent('no-objective');
-    expect(getByTestId('mission-history-count')).toHaveTextContent('2');
+    expect(getByTestId('missions-count')).toHaveTextContent('1');
+    expect(getByTestId('first-mission-status')).toHaveTextContent('in-progress');
+    expect(getByTestId('first-mission-title')).toHaveTextContent('Content Optimization Alpha');
   });
 
-  it('can start a new mission', () => {
+  it('can create a new mission', () => {
     const { getByTestId, getByText } = render(
       <MissionProvider>
         <TestComponent />
@@ -60,12 +60,10 @@ describe('MissionContext', () => {
     );
 
     act(() => {
-      getByText('Start Mission').click();
+      getByText('Create Mission').click();
     });
 
-    expect(getByTestId('mission-status')).toHaveTextContent('active');
-    expect(getByTestId('mission-title')).toHaveTextContent('Test Mission');
-    expect(getByTestId('mission-objective')).toHaveTextContent('Test Objective');
+    expect(getByTestId('missions-count')).toHaveTextContent('2');
   });
 
   it('can update mission status', () => {
@@ -75,49 +73,26 @@ describe('MissionContext', () => {
       </MissionProvider>
     );
 
-    // Start mission
-    act(() => {
-      getByText('Start Mission').click();
-    });
-
-    // Complete mission
     act(() => {
       getByText('Complete Mission').click();
     });
 
-    expect(getByTestId('mission-status')).toHaveTextContent('completed');
+    expect(getByTestId('first-mission-status')).toHaveTextContent('completed');
   });
 
-  it('can clear mission', () => {
+  it('can delete mission', () => {
     const { getByTestId, getByText } = render(
       <MissionProvider>
         <TestComponent />
       </MissionProvider>
     );
 
-    // Start mission
+    const initialCount = parseInt(getByTestId('missions-count').textContent);
+
     act(() => {
-      getByText('Start Mission').click();
+      getByText('Delete Mission').click();
     });
 
-    // Clear mission
-    act(() => {
-      getByText('Clear Mission').click();
-    });
-
-    expect(getByTestId('mission-status')).toHaveTextContent('idle');
-    expect(getByTestId('mission-title')).toHaveTextContent('no-title');
-    expect(getByTestId('mission-objective')).toHaveTextContent('no-objective');
-  });
-
-  it('maintains mission history', () => {
-    const { getByTestId } = render(
-      <MissionProvider>
-        <TestComponent />
-      </MissionProvider>
-    );
-
-    // Should have 2 missions in history from initial state
-    expect(getByTestId('mission-history-count')).toHaveTextContent('2');
+    expect(getByTestId('missions-count')).toHaveTextContent((initialCount - 1).toString());
   });
 });

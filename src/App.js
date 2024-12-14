@@ -5,9 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import SideControlPanel from './components/SideControlPanel';
-import MissionControl from './components/MissionControl';
+import MainPanel from './components/MainPanel';
 import AgentLogs from './components/AgentLogs';
 import Chat from './components/Chat';
+import MissionControl from './components/MissionControl';
 import { MissionProvider } from './contexts/MissionContext';
 import theme from './theme';
 
@@ -29,6 +30,8 @@ function App() {
     switch(currentView) {
       case 'bridge':
       default:
+        return <MainPanel onMissionClick={() => handleViewChange('missions')} />;
+      case 'missions':
         return <MissionControl />;
       case 'logs':
         return <AgentLogs />;

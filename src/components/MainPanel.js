@@ -6,13 +6,15 @@ import SystemMetrics from './SystemMetrics';
 import ExpandablePanel from './ExpandablePanel';
 import SoundEffects from '../utils/soundEffects';
 import AgentModal from './AgentModal';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { MissionContext } from '../contexts/MissionContext';
 
 const MotionPaper = motion(Box);
 
-function MainPanel() {
+function MainPanel({ onMissionClick }) {
   const theme = useTheme();
   const [selectedAgent, setSelectedAgent] = useState(null);
+  const { missions } = useContext(MissionContext);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -193,9 +195,15 @@ function MainPanel() {
             title="Active Missions"
             headerContent={<StatusIndicator status="standby" size={20} />}
             color="warning.main"
+            onClick={onMissionClick}
+            sx={{ cursor: 'pointer' }}
           >
             <Typography variant="body1" gutterBottom>
-              No active missions. Ready to engage.
+              {missions.length === 0 ? (
+                'No active missions. Ready to engage.'
+              ) : (
+                `${missions.length} active mission${missions.length === 1 ? '' : 's'}. Click to view details.`
+              )}
             </Typography>
 
             <SystemMetrics title="Mission Capacity" color="warning.main" />
