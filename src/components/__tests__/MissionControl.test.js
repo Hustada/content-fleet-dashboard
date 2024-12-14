@@ -3,6 +3,10 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
 import { MissionContext } from '../../contexts/MissionContext';
 import MissionControl from '../MissionControl';
 
+// Mock child components
+jest.mock('../StatusIndicator', () => ({ status }) => <div data-testid="status-indicator">{status}</div>);
+jest.mock('../ParticleBackground', () => () => <div data-testid="particle-background">Particle Background</div>);
+
 const mockMissions = [
   {
     id: 'm1',
@@ -92,20 +96,35 @@ describe('MissionControl Component', () => {
     expect(within(detailsPanel).getByText('Analyze Content')).toBeInTheDocument();
   });
 
-  test('updates mission status', () => {
-    renderWithContext(<MissionControl />);
-    const statusSelect = screen.getByTestId('mission-status-select-m1');
-    
-    fireEvent.change(statusSelect, {
-      target: { value: 'completed' }
-    });
-    
-    expect(mockContextValue.updateMission).toHaveBeenCalledWith(
-      'm1',
-      expect.objectContaining({
-        status: 'completed'
-      })
+  test('updates mission status', async () => {
+    const mockUpdateMission = jest.fn();
+    const mockMission = {
+      id: 'm1',
+      title: 'Test Mission',
+      priority: 'high',
+      status: 'pending',
+      progress: 75,
+      agents: ['agent1', 'agent2']
+    };
+
+    render(
+      <MissionContext.Provider value={{ missions: [mockMission], updateMission: mockUpdateMission }}>
+        <MissionControl />
+      </MissionContext.Provider>
     );
+
+    // Open the select dropdown
+    const select = screen.getByTestId('mission-status-select-m1');
+    const selectButton = within(select).getByRole('combobox');
+    fireEvent.mouseDown(selectButton);
+
+    // The options should now be visible in a portal
+    const options = await screen.findAllByRole('option');
+    const completedOption = options.find(option => option.textContent === 'Completed');
+    fireEvent.click(completedOption);
+
+    // Verify the update was called
+    expect(mockUpdateMission).toHaveBeenCalledWith('m1', { status: 'completed' });
   });
 
   test('displays mission progress visualization', () => {

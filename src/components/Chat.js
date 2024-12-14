@@ -71,7 +71,7 @@ function Chat() {
   const [anchorEl, setAnchorEl] = useState(null);
   const messagesEndRef = useRef(null);
   const [selectedAgent, setSelectedAgent] = useState(agents[0]);
-  const { currentMission, updateMissionStatus } = useMission();
+  const { currentMission, updateMission } = useMission();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -100,41 +100,36 @@ function Chat() {
       sender: 'Commander',
       type: 'user',
       content: newMessage,
-      timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
-      isCommand
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     
     setMessages(prev => [...prev, userMessage]);
     setNewMessage('');
-    setIsTyping(true);
-
+    
     // Simulate agent response
+    setIsTyping(true);
     setTimeout(() => {
-      let response;
-      if (isCommand) {
-        response = {
-          id: messages.length + 2,
-          sender: selectedAgent.name,
-          type: 'agent',
-          content: `Command received. Executing task within mission context:
-Mission: ${currentMission.title}
-Objective: ${currentMission.objective}
-Parameters: ${JSON.stringify(currentMission.parameters, null, 2)}`,
-          timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
-          status: 'online'
-        };
-      } else {
-        response = {
-          id: messages.length + 2,
-          sender: selectedAgent.name,
-          type: 'agent',
-          content: 'Acknowledged. Please use commands to initiate specific tasks, or provide additional context for the current mission.',
-          timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
-          status: 'online'
-        };
-      }
-      setMessages(prev => [...prev, response]);
+      const responseMessage = {
+        id: messages.length + 2,
+        sender: selectedAgent.name,
+        type: 'agent',
+        content: isCommand 
+          ? `Processing command: ${newMessage}`
+          : `Acknowledged. ${currentMission ? `Updating mission ${currentMission.id} with new information.` : 'No active mission selected.'}`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        status: selectedAgent.status
+      };
+      
+      setMessages(prev => [...prev, responseMessage]);
       setIsTyping(false);
+      
+      // If there's an active mission, update its status
+      if (currentMission && isCommand) {
+        updateMission(currentMission.id, {
+          status: 'in-progress',
+          lastUpdate: new Date().toISOString()
+        });
+      }
     }, 1500);
   };
 
@@ -203,7 +198,7 @@ Parameters: ${JSON.stringify(currentMission.parameters, null, 2)}`,
         </Box>
 
         {/* Mission Context */}
-        {currentMission.id && (
+        {currentMission && (
           <Paper
             sx={{
               p: 2,
@@ -220,21 +215,21 @@ Parameters: ${JSON.stringify(currentMission.parameters, null, 2)}`,
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <IconButton 
                   size="small" 
-                  onClick={() => updateMissionStatus('active')}
+                  onClick={() => updateMission(currentMission.id, { status: 'active' })}
                   color={currentMission.status === 'active' ? 'primary' : 'default'}
                 >
                   <PlayArrowIcon />
                 </IconButton>
                 <IconButton 
                   size="small"
-                  onClick={() => updateMissionStatus('paused')}
+                  onClick={() => updateMission(currentMission.id, { status: 'paused' })}
                   color={currentMission.status === 'paused' ? 'primary' : 'default'}
                 >
                   <PauseIcon />
                 </IconButton>
                 <IconButton 
                   size="small"
-                  onClick={() => updateMissionStatus('stopped')}
+                  onClick={() => updateMission(currentMission.id, { status: 'stopped' })}
                   color={currentMission.status === 'stopped' ? 'primary' : 'default'}
                 >
                   <StopIcon />
@@ -389,17 +384,19 @@ Parameters: ${JSON.stringify(currentMission.parameters, null, 2)}`,
             }
           }}
         />
-        <IconButton
-          color="primary"
-          onClick={handleSend}
-          disabled={!newMessage.trim()}
-          data-testid="send-button"
-          component={motion.button}
+        <motion.div
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
         >
-          <SendIcon />
-        </IconButton>
+          <IconButton
+            color="primary"
+            onClick={handleSend}
+            disabled={!newMessage.trim()}
+            data-testid="send-button"
+          >
+            <SendIcon />
+          </IconButton>
+        </motion.div>
       </Paper>
     </Box>
   );

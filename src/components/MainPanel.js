@@ -1,31 +1,42 @@
-import { Box, Grid, Paper, Typography, useTheme } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
+/**
+ * MainPanel.js - Bridge Command Center Component
+ * 
+ * This component serves as the main command and control center, featuring:
+ * 1. First Officer Status - AI assistant status and capabilities
+ * 2. Active Missions Panel - Overview of ongoing missions
+ * 3. Crew Status - System component health and metrics
+ * 4. Interactive elements and animations for engagement
+ */
+
+import React, { useState, useContext } from 'react';
+import { Grid, Paper, Typography, useTheme, Box } from '@mui/material';
+import { motion } from 'framer-motion';
 import ParticleBackground from './ParticleBackground';
 import StatusIndicator from './StatusIndicator';
 import SystemMetrics from './SystemMetrics';
 import ExpandablePanel from './ExpandablePanel';
 import SoundEffects from '../utils/soundEffects';
 import AgentModal from './AgentModal';
-import { useState, useContext } from 'react';
+import MissionPreview from './MissionPreview';
 import { MissionContext } from '../contexts/MissionContext';
 
-const MotionPaper = motion(Box);
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.5 } }
+};
 
+/**
+ * MainPanel Component - The Bridge View
+ * @param {Object} props - Component props
+ * @param {Function} props.onMissionClick - Handler for navigating to Mission Control
+ */
 function MainPanel({ onMissionClick }) {
+  // Theme and state management
   const theme = useTheme();
   const [selectedAgent, setSelectedAgent] = useState(null);
   const { missions } = useContext(MissionContext);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
+  // Animation variants for individual items
   const itemVariants = {
     hidden: { 
       opacity: 0,
@@ -41,6 +52,7 @@ function MainPanel({ onMissionClick }) {
     }
   };
 
+  // Animation for scanline effect
   const scanlineVariants = {
     animate: {
       y: ["0%", "100%"],
@@ -60,12 +72,16 @@ function MainPanel({ onMissionClick }) {
     }
   };
 
-  // Simulated system status data
+  /**
+   * Generate a random status for simulation
+   * @returns {string} Random status: 'online', 'standby', or 'offline'
+   */
   const getRandomStatus = () => {
     const statuses = ['online', 'standby', 'offline'];
     return statuses[Math.floor(Math.random() * statuses.length)];
   };
 
+  // Simulated system statuses for crew members
   const systemStatuses = {
     'Research': {
       name: 'Research',
@@ -130,18 +146,24 @@ function MainPanel({ onMissionClick }) {
   };
 
   return (
-    <Box
-      component={motion.div}
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      data-testid="main-panel"
-      sx={{ flexGrow: 1, p: 3, position: 'relative' }}
-      onMouseEnter={() => SoundEffects.scan()}
+      style={{
+        height: '100vh',
+        overflow: 'auto',
+        position: 'relative',
+        backgroundColor: theme.palette.background.default,
+        color: theme.palette.text.primary,
+        padding: theme.spacing(3)
+      }}
     >
+      {/* Animated background */}
       <ParticleBackground />
       
-      <Box sx={{ 
+      {/* Bridge header with status line */}
+      <Grid container sx={{ 
         display: 'flex', 
         alignItems: 'center', 
         gap: 2, 
@@ -155,17 +177,18 @@ function MainPanel({ onMissionClick }) {
       }}>
         <Typography variant="h4">Bridge Overview</Typography>
         <StatusIndicator status="online" size={24} />
-      </Box>
+      </Grid>
       
+      {/* Main content grid */}
       <Grid container spacing={3}>
-        {/* First Officer Panel */}
+        {/* First Officer Status Panel */}
         <Grid item xs={12} md={6}>
           <ExpandablePanel
             title="First Officer Status"
             headerContent={<StatusIndicator status="online" size={20} />}
             defaultExpanded
           >
-            <Box sx={{ mb: 3 }}>
+            <Grid sx={{ mb: 3 }}>
               <Typography 
                 component={motion.div}
                 animate={{ 
@@ -176,8 +199,9 @@ function MainPanel({ onMissionClick }) {
               >
                 Ready to assist, Captain. Awaiting your orders.
               </Typography>
-            </Box>
+            </Grid>
 
+            {/* System metrics display */}
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <SystemMetrics title="Neural Processing" color="primary.main" />
@@ -193,20 +217,34 @@ function MainPanel({ onMissionClick }) {
         <Grid item xs={12} md={6}>
           <ExpandablePanel
             title="Active Missions"
-            headerContent={<StatusIndicator status="standby" size={20} />}
+            headerContent={<StatusIndicator status={missions.length > 0 ? "online" : "standby"} size={20} />}
             color="warning.main"
-            onClick={onMissionClick}
-            sx={{ cursor: 'pointer' }}
+            defaultExpanded
           >
-            <Typography variant="body1" gutterBottom>
-              {missions.length === 0 ? (
-                'No active missions. Ready to engage.'
-              ) : (
-                `${missions.length} active mission${missions.length === 1 ? '' : 's'}. Click to view details.`
-              )}
-            </Typography>
+            <Grid sx={{ mb: 2 }}>
+              <Typography variant="body1" gutterBottom>
+                {missions.length === 0 ? (
+                  'No active missions. Ready to engage.'
+                ) : (
+                  `${missions.length} active mission${missions.length === 1 ? '' : 's'}.`
+                )}
+              </Typography>
+            </Grid>
 
-            <SystemMetrics title="Mission Capacity" color="warning.main" />
+            {missions.map(mission => (
+              <MissionPreview
+                key={mission.id}
+                mission={mission}
+                onViewDetails={() => onMissionClick()}
+                onUpdateStatus={() => onMissionClick()}
+              />
+            ))}
+
+            {missions.length > 0 && (
+              <Grid sx={{ mt: 2 }}>
+                <SystemMetrics title="Mission Capacity" color="warning.main" />
+              </Grid>
+            )}
           </ExpandablePanel>
         </Grid>
 
@@ -214,71 +252,126 @@ function MainPanel({ onMissionClick }) {
         <Grid item xs={12}>
           <ExpandablePanel
             title="Crew Status"
+            headerContent={
+              <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
+                {Object.values(systemStatuses).filter(agent => agent.status === 'online').length} Active
+              </Typography>
+            }
             defaultExpanded
           >
-            <Grid container spacing={2} sx={{ width: '100%', margin: 0 }}>
+            {/* System status cards grid */}
+            <Grid container spacing={3}>
               {Object.entries(systemStatuses).map(([key, agent], index) => (
                 <Grid item xs={12} sm={6} md={4} key={key}>
-                  <MotionPaper
-                    variants={itemVariants}
-                    sx={{ 
-                      p: 2, 
-                      backgroundColor: 'background.default',
+                  <Paper
+                    component={motion.div}
+                    elevation={3}
+                    sx={{
                       position: 'relative',
                       overflow: 'hidden',
-                      border: '1px solid',
-                      borderColor: 'divider',
                       height: '100%',
-                      cursor: 'pointer'
+                      bgcolor: theme.palette.background.paper,
+                      borderRadius: 2,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease-in-out',
+                      border: `1px solid ${theme.palette.divider}`,
+                      '&:hover': {
+                        borderColor: theme.palette.primary.main,
+                        transform: 'translateY(-4px)',
+                        boxShadow: theme.shadows[8],
+                        '& .metrics': {
+                          opacity: 1,
+                          transform: 'translateY(0)'
+                        }
+                      }
                     }}
-                    whileHover={{ 
-                      scale: 1.02,
-                      transition: { duration: 0.2 }
-                    }}
-                    onMouseEnter={() => SoundEffects.hover()}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => {
                       SoundEffects.click();
                       setSelectedAgent(agent);
                     }}
                   >
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="h6" color="primary">
-                        {agent.name}
-                      </Typography>
-                      <StatusIndicator status={agent.status} />
-                    </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      {agent.role}
-                    </Typography>
-                    <Grid container spacing={1}>
-                      {Object.entries(agent.metrics).map(([metric, value]) => (
-                        <Grid item xs={4} key={metric}>
-                          <Typography variant="caption" color="text.secondary" display="block">
-                            {metric}
-                          </Typography>
-                          <Typography variant="body2" color="primary">
-                            {value}
+                    {/* Card Header */}
+                    <Box sx={{ p: 2, pb: 1 }}>
+                      <Grid container alignItems="center" spacing={1}>
+                        <Grid item xs>
+                          <Typography variant="h6" color="primary" sx={{ 
+                            fontWeight: 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1
+                          }}>
+                            {agent.name}
+                            <StatusIndicator status={agent.status} size={16} />
                           </Typography>
                         </Grid>
-                      ))}
-                    </Grid>
+                      </Grid>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        {agent.role}
+                      </Typography>
+                    </Box>
 
-                    {/* Scanning effect */}
-                    <Box
-                      component={motion.div}
+                    {/* Metrics Grid */}
+                    <Box 
+                      className="metrics"
+                      sx={{ 
+                        p: 2,
+                        pt: 0,
+                        opacity: 0.9,
+                        transform: 'translateY(4px)',
+                        transition: 'all 0.3s ease-in-out'
+                      }}
+                    >
+                      <Grid container spacing={1}>
+                        {Object.entries(agent.metrics).map(([metric, value]) => (
+                          <Grid item xs={4} key={metric}>
+                            <Box sx={{
+                              p: 1,
+                              borderRadius: 1,
+                              bgcolor: theme.palette.background.default,
+                              textAlign: 'center'
+                            }}>
+                              <Typography 
+                                variant="caption" 
+                                color="text.secondary" 
+                                sx={{ 
+                                  display: 'block',
+                                  textTransform: 'capitalize',
+                                  mb: 0.5
+                                }}
+                              >
+                                {metric}
+                              </Typography>
+                              <Typography 
+                                variant="body2" 
+                                color="primary"
+                                sx={{ fontWeight: 600 }}
+                              >
+                                {value}
+                              </Typography>
+                            </Box>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Box>
+
+                    {/* Scanline Effect */}
+                    <motion.div
                       variants={scanlineVariants}
                       animate="animate"
-                      sx={{
+                      style={{
                         position: 'absolute',
                         top: 0,
                         left: 0,
                         width: '100%',
                         height: '20%',
-                        background: `linear-gradient(180deg, ${theme.palette.primary.main}10, transparent)`,
+                        background: `linear-gradient(180deg, ${theme.palette.primary.main}15, transparent)`,
                         pointerEvents: 'none',
+                        opacity: 0.3
                       }}
                     />
-                  </MotionPaper>
+                  </Paper>
                 </Grid>
               ))}
             </Grid>
@@ -292,7 +385,7 @@ function MainPanel({ onMissionClick }) {
         agent={selectedAgent}
         status={selectedAgent?.status}
       />
-    </Box>
+    </motion.div>
   );
 }
 

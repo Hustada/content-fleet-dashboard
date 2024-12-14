@@ -36,25 +36,32 @@ jest.mock('howler', () => ({
   })),
 }));
 
-// Mock framer-motion to avoid animation-related issues
+// Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
     div: 'div',
-    button: 'button'
+    span: 'span'
   },
   AnimatePresence: ({ children }) => children
 }));
 
-// Clean up after each test
-afterEach(() => {
-  cleanup();
-  jest.clearAllMocks();
+// Mock ParticleBackground component
+jest.mock('./components/ParticleBackground', () => {
+  return {
+    __esModule: true,
+    default: () => <div data-testid="particle-background">Particle Background</div>
+  };
 });
 
-// Suppress React 18 console errors about act()
+// Suppress specific console errors
 const originalError = console.error;
 console.error = (...args) => {
-  if (/Warning.*not wrapped in act/.test(args[0])) {
+  if (
+    args[0].includes('Warning: Unknown event handler property') ||
+    args[0].includes('Warning: React does not recognize the') ||
+    args[0].includes('whileHover') ||
+    args[0].includes('whileTap')
+  ) {
     return;
   }
   originalError.call(console, ...args);
@@ -62,4 +69,19 @@ console.error = (...args) => {
 
 afterAll(() => {
   console.error = originalError;
+});
+
+// Mock window.matchMedia
+window.matchMedia = window.matchMedia || function() {
+  return {
+    matches: false,
+    addListener: function() {},
+    removeListener: function() {}
+  };
+};
+
+// Clean up after each test
+afterEach(() => {
+  cleanup();
+  jest.clearAllMocks();
 });

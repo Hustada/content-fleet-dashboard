@@ -1,30 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '../../test-utils';
 import MainPanel from '../MainPanel';
-import '@testing-library/jest-dom';
-import { ThemeProvider, createTheme } from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { MissionContext } from '../../contexts/MissionContext';
 
-// Mock framer-motion
-jest.mock('framer-motion', () => {
-  const mockComponent = ({ children, ...props }) => {
-    const { whileHover, whileTap, animate, initial, exit, ...rest } = props;
-    return <div {...rest}>{children}</div>;
-  };
-
-  const motion = (Component) => mockComponent;
-  motion.div = mockComponent;
-  motion.nav = mockComponent;
-  motion.button = mockComponent;
-  motion.svg = mockComponent;
-
-  return {
-    motion,
-    AnimatePresence: ({ children }) => <>{children}</>
-  };
-});
-
-// Mock the child components
-jest.mock('../ParticleBackground', () => () => <div data-testid="particle-background" />);
+// Mock child components
+jest.mock('../ParticleBackground', () => () => <div data-testid="particle-background">Particle Background</div>);
 jest.mock('../StatusIndicator', () => ({ status }) => <div data-testid="status-indicator">{status}</div>);
 jest.mock('../SystemMetrics', () => ({ title }) => <div data-testid="system-metrics">{title}</div>);
 jest.mock('../ExpandablePanel', () => ({ children, title }) => (
@@ -55,13 +36,65 @@ jest.mock('../../utils/SoundEffects', () => ({
   click: jest.fn(),
 }));
 
+// Mock framer-motion
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: 'div',
+    span: 'span'
+  },
+  AnimatePresence: ({ children }) => children
+}));
+
+// Mock MUI components
+jest.mock('@mui/material', () => ({
+  ...jest.requireActual('@mui/material'),
+  Box: ({ component: Component = 'div', ...props }) => {
+    const Comp = typeof Component === 'string' ? Component : 'div';
+    return <Comp {...props} />;
+  }
+}));
+
+const mockMissions = [
+  {
+    id: 'm1',
+    title: 'Test Mission',
+    status: 'active',
+    priority: 'high',
+    objective: 'Test objective',
+    parameters: {
+      topic: 'test',
+      wordCount: 500
+    }
+  }
+];
+
+const mockContextValue = {
+  missions: mockMissions,
+  currentMission: mockMissions[0],
+  updateMission: jest.fn(),
+  addMessage: jest.fn()
+};
+
 const theme = createTheme();
 
-const renderWithTheme = (component) => {
+const renderWithProviders = (ui, options = {}) => {
+  const {
+    missionContext = {
+      missions: [],
+      addMission: jest.fn(),
+      updateMission: jest.fn(),
+      removeMission: jest.fn()
+    },
+    ...renderOptions
+  } = options;
+
   return render(
     <ThemeProvider theme={theme}>
-      {component}
-    </ThemeProvider>
+      <MissionContext.Provider value={missionContext}>
+        {ui}
+      </MissionContext.Provider>
+    </ThemeProvider>,
+    renderOptions
   );
 };
 
@@ -71,7 +104,7 @@ describe('MainPanel', () => {
   });
 
   it('renders the main components', async () => {
-    renderWithTheme(<MainPanel />);
+    renderWithProviders(<MainPanel />);
     
     await waitFor(() => {
       expect(screen.getByText('Bridge Overview')).toBeInTheDocument();
@@ -81,7 +114,7 @@ describe('MainPanel', () => {
   });
 
   it('renders the First Officer panel', async () => {
-    renderWithTheme(<MainPanel />);
+    renderWithProviders(<MainPanel />);
     
     await waitFor(() => {
       const panels = screen.getAllByTestId('expandable-panel');
@@ -94,19 +127,18 @@ describe('MainPanel', () => {
   });
 
   it('renders the Active Missions panel', async () => {
-    renderWithTheme(<MainPanel />);
+    renderWithProviders(<MainPanel />);
     
     await waitFor(() => {
       const panels = screen.getAllByTestId('expandable-panel');
       const missionsPanel = panels.find(panel => panel.getAttribute('title') === 'Active Missions');
       expect(missionsPanel).toBeInTheDocument();
       expect(screen.getByText('No active missions. Ready to engage.')).toBeInTheDocument();
-      expect(screen.getByText('Mission Capacity')).toBeInTheDocument();
     });
   });
 
   it('renders the Crew Status panel with agents', async () => {
-    renderWithTheme(<MainPanel />);
+    renderWithProviders(<MainPanel />);
     
     await waitFor(() => {
       const panels = screen.getAllByTestId('expandable-panel');
@@ -120,7 +152,7 @@ describe('MainPanel', () => {
   });
 
   it('opens AgentModal when clicking an agent', async () => {
-    renderWithTheme(<MainPanel />);
+    renderWithProviders(<MainPanel />);
     
     await waitFor(() => {
       const researchAgent = screen.getByText('Research');
@@ -136,7 +168,7 @@ describe('MainPanel', () => {
   });
 
   it('closes AgentModal when clicking close button', async () => {
-    renderWithTheme(<MainPanel />);
+    renderWithProviders(<MainPanel />);
     
     // Open modal
     await waitFor(() => {

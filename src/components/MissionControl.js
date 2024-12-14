@@ -41,8 +41,8 @@ const MissionControl = () => {
       whileHover={{ scale: 1.02 }}
       data-testid={`mission-card-${mission.id}`}
       onClick={() => setSelectedMission(mission)}
-      sx={{
-        p: 2,
+      style={{
+        padding: theme.spacing(2),
         position: 'relative',
         overflow: 'hidden',
         cursor: 'pointer',
@@ -125,12 +125,15 @@ const MissionControl = () => {
   );
 
   return (
-    <Box
-      component={motion.div}
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      sx={{ flexGrow: 1, p: 3, position: 'relative' }}
+      style={{ 
+        flexGrow: 1, 
+        padding: theme.spacing(3), 
+        position: 'relative' 
+      }}
     >
       <ParticleBackground />
       
@@ -161,55 +164,69 @@ const MissionControl = () => {
         ))}
       </Grid>
 
-      {selectedMission && (
+      <AnimatePresence>
+        {selectedMission && (
+          <Dialog 
+            open={Boolean(selectedMission)} 
+            onClose={() => setSelectedMission(null)}
+            maxWidth="md"
+            fullWidth
+            TransitionComponent={motion.div}
+            TransitionProps={{
+              initial: { opacity: 0, y: 20 },
+              animate: { opacity: 1, y: 0 },
+              exit: { opacity: 0, y: -20 }
+            }}
+          >
+            <Box data-testid="mission-details-panel" sx={{ p: 3 }}>
+              <Typography variant="h5" gutterBottom>{selectedMission.title}</Typography>
+              <Grid container spacing={2}>
+                {selectedMission.tasks.map((task) => (
+                  <Grid item xs={12} key={task.id}>
+                    <Paper sx={{ p: 2 }}>
+                      <Typography>{task.title}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Status: {task.status}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          </Dialog>
+        )}
+
         <Dialog 
-          open={Boolean(selectedMission)} 
-          onClose={() => setSelectedMission(null)}
-          maxWidth="md"
-          fullWidth
+          open={isNewMissionDialogOpen} 
+          onClose={() => setNewMissionDialogOpen(false)}
+          data-testid="new-mission-dialog"
+          TransitionComponent={motion.div}
+          TransitionProps={{
+            initial: { opacity: 0, y: 20 },
+            animate: { opacity: 1, y: 0 },
+            exit: { opacity: 0, y: -20 }
+          }}
         >
-          <Box data-testid="mission-details-panel" sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom>{selectedMission.title}</Typography>
-            <Grid container spacing={2}>
-              {selectedMission.tasks.map((task) => (
-                <Grid item xs={12} key={task.id}>
-                  <Paper sx={{ p: 2 }}>
-                    <Typography>{task.title}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Status: {task.status}
-                    </Typography>
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
+          <Box sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>Create New Mission</Typography>
+            <TextField
+              fullWidth
+              label="Mission Title"
+              value={newMissionTitle}
+              onChange={(e) => setNewMissionTitle(e.target.value)}
+              sx={{ mb: 2 }}
+            />
+            <Button 
+              variant="contained" 
+              onClick={handleCreateMission}
+              disabled={!newMissionTitle.trim()}
+            >
+              Create Mission
+            </Button>
           </Box>
         </Dialog>
-      )}
-
-      <Dialog 
-        open={isNewMissionDialogOpen} 
-        onClose={() => setNewMissionDialogOpen(false)}
-        data-testid="new-mission-dialog"
-      >
-        <Box sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>Create New Mission</Typography>
-          <TextField
-            fullWidth
-            label="Mission Title"
-            value={newMissionTitle}
-            onChange={(e) => setNewMissionTitle(e.target.value)}
-            sx={{ mb: 2 }}
-          />
-          <Button 
-            variant="contained" 
-            onClick={handleCreateMission}
-            disabled={!newMissionTitle.trim()}
-          >
-            Create Mission
-          </Button>
-        </Box>
-      </Dialog>
-    </Box>
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
