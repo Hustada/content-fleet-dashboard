@@ -159,7 +159,14 @@ function Chat() {
   };
 
   return (
-    <Box sx={{ p: 3, height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ 
+      height: '100vh',
+      display: 'flex', 
+      flexDirection: 'column',
+      pt: 10, 
+      px: 3,  
+      pb: 3   
+    }}>
       {/* Header */}
       <Box
         component={motion.div}
@@ -167,9 +174,20 @@ function Chat() {
         animate={{ opacity: 1, y: 0 }}
         sx={{ mb: 3 }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          mb: 2,
+          flexWrap: 'wrap',
+          gap: 2
+        }}>
           <Typography variant="h4">Communication Console</Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 2,
+            flexWrap: 'wrap'
+          }}>
             {agents.map(agent => (
               <Paper
                 key={agent.id}
@@ -187,11 +205,16 @@ function Chat() {
                   gap: 1,
                   cursor: 'pointer',
                   bgcolor: selectedAgent.id === agent.id ? 'primary.dark' : 'background.paper',
-                  transition: 'background-color 0.3s'
+                  transition: 'background-color 0.3s',
+                  '&:hover': {
+                    bgcolor: selectedAgent.id === agent.id ? 'primary.dark' : 'action.hover'
+                  }
                 }}
               >
                 <StatusIndicator status={agent.status === 'online' ? 'online' : agent.status === 'busy' ? 'standby' : 'offline'} />
-                <Typography variant="body2">{agent.name}</Typography>
+                <Typography variant="body2" sx={{ color: selectedAgent.id === agent.id ? 'common.white' : 'text.primary' }}>
+                  {agent.name}
+                </Typography>
               </Paper>
             ))}
           </Box>
